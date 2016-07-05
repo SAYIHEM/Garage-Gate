@@ -1,63 +1,26 @@
 public class GarageDoor {
 
-    private Motor motor;
-    private DoorState currentState;
+    static private Motor motor = new Motor();
+    static private DoorState currentState = new Closed();
 
 
     public GarageDoor(){
 
     }
 
-    public GarageDoor(Motor newMotor, DoorState currentState) throws NullPointerException{
+    public void openDoor() {
 
-        if (newMotor == null){
-            throw new NullPointerException("Motor cannot be NULL!");
-        }
-
-        if (currentState == null){
-            throw new NullPointerException("currentState cannot be NULL!");
-        }
-
-        this.motor = newMotor;
-        this.currentState = currentState;
+        this.currentState.openDoor();
     }
 
-    public void openDoor() throws IllegalStateException{
+    public void stopper() {
 
-        if (this.currentState.equals(new Open()) || this.currentState.equals(new Opening())){
-            throw new IllegalStateException("State have to be 'Closing' or 'Closed'!");
-        }
-
-        this.setState(new Opening());
-        this.motor.upwards();
+        this.currentState.stopper();
     }
 
-    public void stopper() throws IllegalStateException{
+    public void closeDoor(){
 
-        if (this.currentState.equals(new Closed()) || this.currentState.equals(new Open())){
-            throw new IllegalStateException("Door has to be in state 'opening' or 'closing'!");
-        }
-
-        if (this.currentState.equals(new Opening())){
-
-            this.motor.stop();
-            this.setState(new Open());
-        }
-        else if (this.currentState.equals(new Closing())){
-
-            this.motor.stop();
-            this.setState(new Closed());
-        }
-    }
-
-    public void closeDoor() throws IllegalStateException{
-
-        if (this.currentState.equals(new Closed()) || this.currentState.equals(new Closing())){
-            throw new IllegalStateException("State have to be 'Opening' or 'Open'!");
-        }
-
-        this.setState(new Closing());
-        this.motor.downwards();
+        this.currentState.closeDoor();
     }
 
     public Motor getMotor(){
@@ -75,33 +38,69 @@ public class GarageDoor {
     }
 
     // INNER CLASSES //
-    private class Open extends DoorState {
+    static abstract class DoorState {
+
+        public void openDoor(){
+
+            if (currentState.getClass().equals(new Open().getClass()) ||
+                currentState.getClass().equals(new Opening().getClass())){
+
+                throw new IllegalStateException("Illegal State!");
+            }
+        }
+
+        public void closeDoor() throws IllegalStateException{
+
+            if (currentState.getClass().equals(new Closed().getClass()) ||
+                currentState.getClass().equals(new Closing().getClass())){
+
+                throw new IllegalStateException("Illegal State!");
+            }
+        }
+
+        public void stopper() throws IllegalStateException{
+
+            if (currentState.getClass().equals(new Open().getClass()) ||
+                currentState.getClass().equals(new Closed().getClass())){
+
+                throw new IllegalStateException("Illegal State!");
+            }
+        }
+    }
+
+    static class Open extends DoorState {
 
         public Open(){
 
         }
 
-        public void closeDoor(){
+        public void closeDoor() {
 
+            currentState = new Closing();
+            motor.downwards();
         }
     }
 
-    private class Opening extends DoorState {
+    static class Opening extends DoorState {
 
         public Opening(){
 
         }
 
-        public void openDoor(){
+        public void closeDoor(){
 
+            currentState = new Closing();
+            motor.downwards();
         }
 
         public void stopper(){
 
+            motor.stop();
+            currentState = new Open();
         }
     }
 
-    private class Closed extends DoorState {
+    static class Closed extends DoorState {
 
         public Closed(){
 
@@ -109,21 +108,27 @@ public class GarageDoor {
 
         public void openDoor(){
 
+            currentState = new Opening();
+            motor.upwards();
         }
-
     }
 
-    private class Closing extends DoorState {
+    static class Closing extends DoorState {
 
         public Closing(){
 
         }
 
-        public void closeDoor(){
+        public void openDoor(){
 
+            currentState = new Opening();
+            motor.upwards();
         }
 
         public void stopper(){
+
+            motor.stop();
+            currentState = new Closed();
 
         }
     }
