@@ -97,6 +97,7 @@ public class GarageDoor {
 
             motor.stop();
             currentState = new Open();
+            System.out.println("Door Open!");
         }
     }
 
@@ -129,6 +130,7 @@ public class GarageDoor {
 
             motor.stop();
             currentState = new Closed();
+            System.out.println("Door Closed!");
 
         }
     }
